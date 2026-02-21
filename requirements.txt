@@ -1,0 +1,9 @@
+langchain
+langgraph
+langchain-google-genai
+starlette
+uvicorn
+pydantic
+httpx
+python-dotenv
+langchain-openai

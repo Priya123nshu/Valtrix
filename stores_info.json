@@ -1,0 +1,50 @@
+{
+  "knowledge_store": [
+    {
+      "name": "agent_3bf1864d_41c1_457b_9fed_6c88c5ee1fcc",
+      "count": 5
+    },
+    {
+      "name": "agent_f25942ca_6ef7_4cf8_aacb_b8afa4731dbe",
+      "count": 5
+    },
+    {
+      "name": "agent_9a66adbd_588b_4f77_9712_c13a0df12d0f",
+      "count": 0
+    }
+  ],
+  "knowledge_store_backup": [
+    {
+      "name": "agent_f25942ca_6ef7_4cf8_aacb_b8afa4731dbe",
+      "count": 6
+    },
+    {
+      "name": "agent_f56f29be_7a45_4d90_b1f6_2c667ae09f77",
+      "count": 1
+    },
+    {
+      "name": "agent_knowledge",
+      "count": 12
+    },
+    {
+      "name": "agent_117f476a_6b2d_41e1_90b5_83c4c98f147f",
+      "count": 1
+    },
+    {
+      "name": "agent_46752806_1283_4730_9765_c4acf1652753",
+      "count": 0
+    },
+    {
+      "name": "agent_0cdca328_0d0e_4ffc_82e4_753202933e25",
+      "count": 0
+    },
+    {
+      "name": "agent_9a66adbd_588b_4f77_9712_c13a0df12d0f",
+      "count": 7
+    },
+    {
+      "name": "agent_3bf1864d_41c1_457b_9fed_6c88c5ee1fcc",
+      "count": 7
+    }
+  ]
+}

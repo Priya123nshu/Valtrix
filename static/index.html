@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NEXUS // Agent Network</title>
+    <link rel="stylesheet" href="/static/styles.css">
+    <link
+        href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Orbitron:wght@400;700&display=swap"
+        rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+
+<body>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h1 class="glitch" data-text="NEXUS">NEXUS</h1>
+                <div class="status-indicator">
+                    <span class="status-dot"></span>
+                    <span class="status-text">SYSTEM ONLINE</span>
+                </div>
+            </div>
+
+            <div class="agent-list" id="agentList">
+                <!-- Agents will be injected here -->
+                <div class="loading">SCANNING NETWORK...</div>
+            </div>
+
+            <div class="sidebar-footer">
+                <button class="btn-primary" onclick="openModal()">
+                    <i data-lucide="plus"></i> DEPLOY AGENT
+                </button>
+            </div>
+        </aside>
+
+        <!-- Main Chat Area -->
+        <main class="chat-interface">
+            <div class="chat-header" id="chatHeader">
+                <div class="empty-state-header">SELECT AN AGENT</div>
+            </div>
+
+            <div class="chat-messages" id="chatMessages">
+                <div class="welcome-screen">
+                    <div class="logo-large">NEXUS PROTOCOL</div>
+                    <p>Select an active neural unit to initiate communication.</p>
+                </div>
+            </div>
+
+            <div class="chat-input-area">
+                <textarea id="messageInput" placeholder="Enter command..." disabled></textarea>
+                <button id="sendButton" disabled>
+                    <i data-lucide="send"></i>
+                </button>
+            </div>
+        </main>
+    </div>
+
+    <!-- Create Agent Modal -->
+    <div class="modal-overlay" id="createModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h2>INITIALIZE UNIT</h2>
+                <button class="close-btn" onclick="closeModal()"><i data-lucide="x"></i></button>
+            </div>
+            <div class="modal-body">
+                <form id="createAgentForm">
+                    <div class="form-group">
+                        <label>IDENTITY (NAME)</label>
+                        <input type="text" id="agentName" placeholder="e.g. Maya" required>
+                    </div>
+                    <div class="form-group">
+                        <label>DESIGNATION (ROLE)</label>
+                        <input type="text" id="agentDesc" placeholder="e.g. Senior Frontend Engineer" required>
+                    </div>
+                    <div class="form-group">
+                        <label>CORE DIRECTIVE (SYSTEM PROMPT)</label>
+                        <textarea id="agentRole" placeholder="You are an expert in..." required></textarea>
+                    </div>
+                    <button type="submit" class="btn-primary full-width">EXECUTE DEPLOYMENT</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="/static/app.js"></script>
+    <script>
+        lucide.createIcons();
+    </script>
+</body>
+
+</html>

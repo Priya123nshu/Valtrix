@@ -1,0 +1,58 @@
+[
+  {
+    "name": "Adit",
+    "url": "http://localhost:8000/f25942ca-6ef7-4cf8-aacb-b8afa4731dbe/",
+    "description": "Senior Product Manager",
+    "id": "f25942ca-6ef7-4cf8-aacb-b8afa4731dbe",
+    "internal_port": 8002
+  },
+  {
+    "name": "Jhon",
+    "url": "http://localhost:8000/3bf1864d-41c1-457b-9fed-6c88c5ee1fcc/",
+    "description": "financial adviser",
+    "id": "3bf1864d-41c1-457b-9fed-6c88c5ee1fcc",
+    "internal_port": 8007
+  },
+  {
+    "id": "9a66adbd-588b-4f77-9712-c13a0df12d0f",
+    "name": "shantanu",
+    "url": "http://localhost:8000/9a66adbd-588b-4f77-9712-c13a0df12d0f/",
+    "internal_port": 8008,
+    "description": "llm expert"
+  },
+  {
+    "id": "46752806-1283-4730-9765-c4acf1652753",
+    "name": "Neha Gupta",
+    "url": "http://localhost:8000/46752806-1283-4730-9765-c4acf1652753/",
+    "internal_port": 8013,
+    "description": "Staff ML Engineer at DataNova Tech"
+  },
+  {
+    "id": "0cdca328-0d0e-4ffc-82e4-753202933e25",
+    "name": "Arjun Patel",
+    "url": "http://localhost:8000/0cdca328-0d0e-4ffc-82e4-753202933e25/",
+    "internal_port": 8014,
+    "description": " Lead Generative AI Engineer at SynthAI Labs "
+  },
+  {
+    "id": "3df77a1e-f949-4550-8cbf-a8a3ec4f5e52",
+    "name": " Vikram Singh",
+    "url": "http://localhost:8000/3df77a1e-f949-4550-8cbf-a8a3ec4f5e52/",
+    "internal_port": 8015,
+    "description": "Principal Deep Learning Engineer at VisionCore AI"
+  },
+  {
+    "id": "d0a92738-522c-4367-9c9c-f4edc4de8216",
+    "name": "Vikrant Joshi",
+    "url": "http://localhost:8000/d0a92738-522c-4367-9c9c-f4edc4de8216/",
+    "internal_port": 8016,
+    "description": "Lead Blockchain Engineer at ChainNova Labs"
+  },
+  {
+    "id": "bb4ee161-16e2-476b-984e-9b9ca9ca41c2",
+    "name": "Pankhuri Mehta",
+    "url": "http://localhost:8000/bb4ee161-16e2-476b-984e-9b9ca9ca41c2/",
+    "internal_port": 8017,
+    "description": "Lead AI Content Creator & Head of Community at AIEdge Academy"
+  }
+]
