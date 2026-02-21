@@ -1,0 +1,14 @@
+fastapi
+uvicorn
+supabase
+python-dotenv
+pydantic
+python-jose[cryptography]
+langchain
+langchain-openai
+langchain-core
+langchain-text-splitters
+langgraph
+pinecone
+sentence-transformers
+httpx
