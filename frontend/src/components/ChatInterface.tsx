@@ -5,6 +5,7 @@ import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
 import { KnowledgeModal } from './KnowledgeModal';
 import { supabase } from '@/lib/supabase';
+import { API_BASE } from '@/lib/api';
 import { useRouter } from 'next/navigation';
 
 interface ChatInterfaceProps {
@@ -112,7 +113,7 @@ export function ChatInterface({ agent }: ChatInterfaceProps) {
 
             // Determine backend URL (fallback to local if agent.url is just an ID or path)
             // For FastAPI backend we expect /api/agents/{agent_id}/chat
-            const apiUrl = agent.url.includes('http') ? agent.url : `http://localhost:8001/api/agents/${agent.id}/chat`;
+            const apiUrl = agent.url.includes('http') ? agent.url : `${API_BASE}/api/agents/${agent.id}/chat`;
 
             // Updated payload to match new FastAPI Schema (ChatRequest)
             const payload = {

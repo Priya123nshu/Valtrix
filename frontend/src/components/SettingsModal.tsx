@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { X, Globe, Save } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/lib/AuthContext';
+import { API_BASE } from '@/lib/api';
 
 interface SettingsModalProps {
     isOpen: boolean;
@@ -70,7 +71,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
             const { data: { session } } = await supabase.auth.getSession();
             const token = session?.access_token;
 
-            const res = await fetch(`http://localhost:8001/api/agents/${personalAgentId}`, {
+            const res = await fetch(`${API_BASE}/api/agents/${personalAgentId}`, {
                 method: 'PATCH',
                 headers: {
                     'Content-Type': 'application/json',

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { X, Save, Search, Database } from 'lucide-react';
 import { Agent } from '@/types';
 import { supabase } from '@/lib/supabase';
+import { API_BASE } from '@/lib/api';
 
 interface KnowledgeModalProps {
     isOpen: boolean;
@@ -34,7 +35,7 @@ export function KnowledgeModal({ isOpen, onClose, agent }: KnowledgeModalProps) 
 
             const apiUrl = agent.url.includes('http')
                 ? `${agent.url.replace('/chat', '')}/knowledge`
-                : `http://localhost:8001/api/agents/${agent.id}/knowledge`;
+                : `${API_BASE}/api/agents/${agent.id}/knowledge`;
 
             const res = await fetch(apiUrl, {
                 method: 'POST',
@@ -67,7 +68,7 @@ export function KnowledgeModal({ isOpen, onClose, agent }: KnowledgeModalProps) 
 
             const apiUrl = agent.url.includes('http')
                 ? `${agent.url.replace('/chat', '')}/knowledge?q=${encodeURIComponent(searchQuery)}`
-                : `http://localhost:8001/api/agents/${agent.id}/knowledge?q=${encodeURIComponent(searchQuery)}`;
+                : `${API_BASE}/api/agents/${agent.id}/knowledge?q=${encodeURIComponent(searchQuery)}`;
 
             const res = await fetch(apiUrl, {
                 headers: {

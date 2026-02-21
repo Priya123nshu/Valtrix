@@ -3,6 +3,7 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from "react";
 import { User, Session } from "@supabase/supabase-js";
 import { supabase } from "./supabase";
+import { API_BASE } from "./api";
 
 type Profile = {
     id: string;
@@ -76,7 +77,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                     const token = currentSession.access_token;
 
                     try {
-                        const initRes = await fetch('http://localhost:8001/api/auth/initialize', {
+                        const initRes = await fetch(`${API_BASE}/api/auth/initialize`, {
                             method: 'POST',
                             headers: {
                                 'Content-Type': 'application/json',

@@ -6,6 +6,7 @@ import { ArrowLeft, UserPlus, Check, Clock, ShieldAlert } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/AuthContext';
 import { supabase } from '@/lib/supabase';
+import { API_BASE } from '@/lib/api';
 import AuthGuard from '@/components/AuthGuard';
 
 function DiscoverContent() {
@@ -30,7 +31,7 @@ function DiscoverContent() {
             const token = session?.access_token;
 
             // Fetch ALL public agents
-            const publicRes = await fetch('http://localhost:8001/api/agents/public');
+            const publicRes = await fetch(`${API_BASE}/api/agents/public`);
             if (!publicRes.ok) throw new Error("Failed to fetch public agents");
             const publicJson = await publicRes.json();
 
@@ -40,12 +41,12 @@ function DiscoverContent() {
                     id: a.id,
                     name: a.users?.name || "Unknown User",
                     description: a.headline || a.users?.role_type || "Professional",
-                    url: `http://localhost:8001/api/agents/${a.id}/chat`
+                    url: `${API_BASE}/api/agents/${a.id}/chat`
                 }));
             setPublicAgents(agentsList);
 
             // Fetch my connections
-            const connRes = await fetch(`http://localhost:8001/api/agents/${personalAgentId}/connections`, {
+            const connRes = await fetch(`${API_BASE}/api/agents/${personalAgentId}/connections`, {
                 headers: { ...(token ? { 'Authorization': `Bearer ${token}` } : {}) }
             });
             if (connRes.ok) {
@@ -72,7 +73,7 @@ function DiscoverContent() {
             const token = session?.access_token;
 
             const payload = { target_agent_id: targetAgentId };
-            const res = await fetch(`http://localhost:8001/api/agents/${personalAgentId}/connections/request`, {
+            const res = await fetch(`${API_BASE}/api/agents/${personalAgentId}/connections/request`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

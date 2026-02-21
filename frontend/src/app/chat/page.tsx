@@ -9,6 +9,7 @@ import { Command, MessageSquare, ShieldAlert, Settings, Users, Check, X, Compass
 import { useSearchParams, useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/AuthContext';
 import { supabase } from '@/lib/supabase';
+import { API_BASE } from '@/lib/api';
 
 function ChatContent() {
   const { personalAgentId, profile, agentHeadline } = useAuth();
@@ -34,13 +35,13 @@ function ChatContent() {
         id: personalAgentId,
         name: profile?.name || "My Agent",
         description: agentHeadline || "Your personalized AI assistant.",
-        url: `http://localhost:8001/api/agents/${personalAgentId}/chat`
+        url: `${API_BASE}/api/agents/${personalAgentId}/chat`
       };
       setMyAgent(pAgent);
       if (!currentAgent) setCurrentAgent(pAgent); // Only set if not already set
 
       // 2. Fetch Connections securely
-      const res = await fetch(`http://localhost:8001/api/agents/${personalAgentId}/connections`, {
+      const res = await fetch(`${API_BASE}/api/agents/${personalAgentId}/connections`, {
         headers: {
           ...(token ? { 'Authorization': `Bearer ${token}` } : {})
         }
@@ -53,7 +54,7 @@ function ChatContent() {
           id: conn.agent_id,
           name: conn.agent_name || "Unknown User",
           description: conn.headline || "Professional",
-          url: `http://localhost:8001/api/agents/${conn.agent_id}/chat`
+          url: `${API_BASE}/api/agents/${conn.agent_id}/chat`
         }));
 
         setConnectedAgents(acceptedList);
@@ -76,7 +77,7 @@ function ChatContent() {
       const { data: { session } } = await supabase.auth.getSession();
       const token = session?.access_token;
 
-      const res = await fetch(`http://localhost:8001/api/agents/${personalAgentId}/connections/${connectionId}/accept`, {
+      const res = await fetch(`${API_BASE}/api/agents/${personalAgentId}/connections/${connectionId}/accept`, {
         method: 'PATCH',
         headers: {
           ...(token ? { 'Authorization': `Bearer ${token}` } : {})
