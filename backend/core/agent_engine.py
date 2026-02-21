@@ -1,4 +1,5 @@
 import os
+import requests
 from langchain_openai import AzureChatOpenAI
 from langchain_core.messages import HumanMessage, SystemMessage
 from pinecone import Pinecone
@@ -17,7 +18,7 @@ class AgentEngine:
                 print(f"Creating Pinecone index '{index_name}' for embeddings...")
                 self.pc.create_index(
                     name=index_name,
-                    dimension=384,
+                    dimension=3072,
                     metric="cosine",
                     spec=ServerlessSpec(cloud="aws", region="us-east-1")
                 )
@@ -27,6 +28,9 @@ class AgentEngine:
             self.pc = None
             self.index = None
 
+        # Gemini API key for embeddings
+        self.gemini_api_key = os.getenv("GEMINI_API_KEY", "")
+
         # Initialize LLM
         self.llm = AzureChatOpenAI(
             azure_deployment=os.getenv("AZURE_OPENAI_DEPLOYMENT_NAME", "gpt-4"),
@@ -34,16 +38,25 @@ class AgentEngine:
             temperature=0.7
         )
 
+    def _get_gemini_embedding(self, text: str) -> list[float]:
+        """Get embedding from Gemini API."""
+        url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-embedding-001:embedContent?key={self.gemini_api_key}"
+        res = requests.post(url, json={"content": {"parts": [{"text": text}]}})
+        if res.status_code == 200:
+            return res.json().get("embedding", {}).get("values", [])
+        print(f"Gemini embedding error: {res.status_code} {res.text}")
+        return []
+
     async def _query_pinecone(self, agent_id: str, query: str, top_k: int = 5) -> str:
         """Query Pinecone using the agent_id as the namespace."""
-        if not self.index:
+        if not self.index or not self.gemini_api_key:
             return ""
 
         try:
-            import sentence_transformers
-            embedding_model = sentence_transformers.SentenceTransformer("all-MiniLM-L6-v2")
-            
-            query_embedding = embedding_model.encode(query).tolist()
+            query_embedding = self._get_gemini_embedding(query)
+            if not query_embedding:
+                return ""
+
             namespace = f"agent_{agent_id}"
             
             results = self.index.query(
@@ -63,13 +76,14 @@ class AgentEngine:
 
     async def search_knowledge(self, agent_id: str, query: str, top_k: int = 5) -> list[str]:
         """Search pinecone for raw strings to return to frontend API."""
-        if not self.index:
+        if not self.index or not self.gemini_api_key:
             return []
         
         try:
-            import sentence_transformers
-            embedding_model = sentence_transformers.SentenceTransformer("all-MiniLM-L6-v2")
-            query_embedding = embedding_model.encode(query).tolist()
+            query_embedding = self._get_gemini_embedding(query)
+            if not query_embedding:
+                return []
+
             namespace = f"agent_{agent_id}"
             
             results = self.index.query(
@@ -88,10 +102,11 @@ class AgentEngine:
         """Chunks text, embeds it, and saves to Pinecone."""
         if not self.index:
             raise Exception("Pinecone not initialized")
+        if not self.gemini_api_key:
+            raise Exception("Gemini API key not configured")
             
         try:
             from langchain_text_splitters import RecursiveCharacterTextSplitter
-            import sentence_transformers
             import uuid
             
             splitter = RecursiveCharacterTextSplitter(chunk_size=500, chunk_overlap=50)
@@ -99,18 +114,18 @@ class AgentEngine:
             
             if not chunks:
                 return 0
-                
-            embedding_model = sentence_transformers.SentenceTransformer("all-MiniLM-L6-v2")
-            embeddings = embedding_model.encode(chunks).tolist()
-            
+
             namespace = f"agent_{agent_id}"
             vectors = []
             
             for i, chunk in enumerate(chunks):
+                embedding = self._get_gemini_embedding(chunk)
+                if not embedding:
+                    continue
                 vector_id = str(uuid.uuid4())
                 vectors.append({
                     "id": vector_id,
-                    "values": embeddings[i],
+                    "values": embedding,
                     "metadata": {"text": chunk}
                 })
                 

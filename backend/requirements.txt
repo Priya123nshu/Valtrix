@@ -10,5 +10,5 @@ langchain-core
 langchain-text-splitters
 langgraph
 pinecone
-sentence-transformers
 httpx
+requests
