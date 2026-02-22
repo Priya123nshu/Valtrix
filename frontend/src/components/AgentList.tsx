@@ -44,10 +44,14 @@ export function AgentList({ agents, currentAgent, onSelectAgent, loading }: Agen
                     )}
                 >
                     <div className={cn(
-                        "w-8 h-8 rounded-full flex items-center justify-center shrink-0 border transition-colors",
+                        "w-8 h-8 rounded-full flex items-center justify-center shrink-0 border transition-colors overflow-hidden",
                         currentAgent?.url === agent.url ? "bg-primary text-primary-foreground border-primary" : "bg-background border-border"
                     )}>
-                        <span className="text-xs font-semibold">{agent.name.substring(0, 2).toUpperCase()}</span>
+                        {agent.avatarUrl ? (
+                            <img src={agent.avatarUrl} alt={agent.name} className="w-full h-full object-cover" />
+                        ) : (
+                            <span className="text-xs font-semibold">{agent.name.substring(0, 2).toUpperCase()}</span>
+                        )}
                     </div>
 
                     <div className="flex-1 min-w-0">

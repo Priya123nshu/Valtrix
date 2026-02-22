@@ -5,6 +5,7 @@ export interface Agent {
     url: string;
     role?: string;
     status?: 'online' | 'offline' | 'busy';
+    avatarUrl?: string | null;
 }
 
 export interface MessagePart {

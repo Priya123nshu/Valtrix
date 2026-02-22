@@ -35,7 +35,7 @@ async def get_user_skills(user_id: str):
 async def get_public_agents():
     """Fetch all public agents with user details securely"""
     response = supabase.table("personal_agents").select(
-        "id, bio, headline, created_at, users(name, role_type)"
+        "id, bio, headline, created_at, avatar_url, agent_name, users(name, role_type)"
     ).eq("is_public", True).execute()
     return response.data
 

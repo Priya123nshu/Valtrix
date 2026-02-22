@@ -20,6 +20,7 @@ type AuthContextType = {
     profile: Profile | null;
     personalAgentId: string | null;
     agentHeadline: string | null;
+    agentAvatarUrl: string | null;
     loading: boolean;
     signOut: () => Promise<void>;
 };
@@ -32,6 +33,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const [profile, setProfile] = useState<Profile | null>(null);
     const [personalAgentId, setPersonalAgentId] = useState<string | null>(null);
     const [agentHeadline, setAgentHeadline] = useState<string | null>(null);
+    const [agentAvatarUrl, setAgentAvatarUrl] = useState<string | null>(null);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -46,6 +48,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                         setProfile(null);
                         setPersonalAgentId(null);
                         setAgentHeadline(null);
+                        setAgentAvatarUrl(null);
                         setLoading(false);
                     }
                     return;
@@ -66,7 +69,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                         .maybeSingle(), // Use maybeSingle to prevent crashing if user deleted the row
                     supabase
                         .from('personal_agents')
-                        .select('id, headline')
+                        .select('id, headline, avatar_url')
                         .eq('user_id', currentSession.user.id)
                         .maybeSingle() // Use maybeSingle as the user might not have one yet
                 ]);
@@ -93,7 +96,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                             // Re-fetch the data after successful initialization
                             const [newProfileRes, newAgentRes] = await Promise.all([
                                 supabase.from('users').select('*').eq('id', currentSession.user.id).maybeSingle(),
-                                supabase.from('personal_agents').select('id, headline').eq('user_id', currentSession.user.id).maybeSingle()
+                                supabase.from('personal_agents').select('id, headline, avatar_url').eq('user_id', currentSession.user.id).maybeSingle()
                             ]);
                             profileRes = newProfileRes;
                             agentRes = newAgentRes;
@@ -117,13 +120,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                         console.warn("Notice: Missing personal agent:", agentRes.error.message);
                         setPersonalAgentId(null);
                         setAgentHeadline(null);
+                        setAgentAvatarUrl(null);
                     } else if (!agentRes.data) {
                         console.warn(`Notice: No personal agent found for user ID: ${currentSession.user.id}`);
                         setPersonalAgentId(null);
                         setAgentHeadline(null);
+                        setAgentAvatarUrl(null);
                     } else {
                         setPersonalAgentId(agentRes.data.id);
                         setAgentHeadline(agentRes.data.headline || null);
+                        setAgentAvatarUrl(agentRes.data.avatar_url || null);
                     }
                 }
             } catch (error) {
@@ -158,7 +164,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
 
     return (
-        <AuthContext.Provider value={{ user, session, profile, personalAgentId, agentHeadline, loading, signOut }}>
+        <AuthContext.Provider value={{ user, session, profile, personalAgentId, agentHeadline, agentAvatarUrl, loading, signOut }}>
             {children}
         </AuthContext.Provider>
     );

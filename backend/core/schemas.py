@@ -15,6 +15,7 @@ class AgentPatchRequest(BaseModel):
     headline: str | None = None
     is_public: bool | None = None
     agent_name: str | None = None
+    avatar_url: str | None = None
 
 class AgentConnectionRequest(BaseModel):
     target_agent_id: str

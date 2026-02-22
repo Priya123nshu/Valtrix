@@ -1,18 +1,22 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Agent, Message } from '@/types';
-import { Send, Bot, User, Sparkles, Book, Trash2 } from 'lucide-react';
+import { Send, Bot, User, Sparkles, Book, Trash2, Users, UserPlus, Settings } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
-import { KnowledgeModal } from './KnowledgeModal';
+import { KnowledgeModal } from '@/components/KnowledgeModal';
 import { supabase } from '@/lib/supabase';
 import { API_BASE } from '@/lib/api';
 import { useRouter } from 'next/navigation';
+import { AnimatedAIChat } from '@/components/ui/animated-ai-chat';
 
 interface ChatInterfaceProps {
     agent: Agent;
+    onOpenConnections?: () => void;
+    onOpenMyAgent?: () => void;
+    onFindPeople?: () => void;
 }
 
-export function ChatInterface({ agent }: ChatInterfaceProps) {
+export function ChatInterface({ agent, onOpenConnections, onOpenMyAgent, onFindPeople }: ChatInterfaceProps) {
     const [messages, setMessages] = useState<Message[]>([]);
     const [input, setInput] = useState('');
     const [isLoading, setIsLoading] = useState(false);
@@ -88,12 +92,13 @@ export function ChatInterface({ agent }: ChatInterfaceProps) {
         }
     }, [input]);
 
-    const sendMessage = async () => {
-        if (!input.trim() || isLoading) return;
+    const sendMessage = async (overrideText?: string) => {
+        const textToSend = overrideText || input;
+        if (!textToSend.trim() || isLoading) return;
 
         const userMsg: Message = {
             role: 'user',
-            parts: [{ text: input.trim() }],
+            parts: [{ text: textToSend }],
             timestamp: new Date().toISOString()
         };
 
@@ -176,19 +181,29 @@ export function ChatInterface({ agent }: ChatInterfaceProps) {
     };
 
     return (
-        <div className="flex flex-col h-full bg-background border border-border rounded-xl shadow-sm overflow-hidden relative">
+        <div className="flex flex-col h-full w-full bg-black/90 overflow-hidden relative backdrop-blur-3xl">
+            {/* Background Orbs */}
+            <div className="absolute inset-0 w-full h-full overflow-hidden pointer-events-none">
+                <div className="absolute top-0 left-1/4 w-96 h-96 bg-blue-500/10 rounded-full mix-blend-screen filter blur-[128px] animate-pulse" />
+                <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-sky-500/10 rounded-full mix-blend-screen filter blur-[128px] animate-pulse delay-700" />
+                <div className="absolute top-1/4 right-1/3 w-64 h-64 bg-cyan-500/10 rounded-full mix-blend-screen filter blur-[96px] animate-pulse delay-1000" />
+            </div>
 
             {/* Header */}
-            <div className="flex items-center justify-between p-4 border-b border-border bg-card z-10">
-                <div className="flex items-center gap-3">
-                    <div className={`p-2 rounded-lg bg-primary/10 text-primary`}>
-                        <Bot className="w-5 h-5" />
+            <div className="flex items-center justify-between p-4 border-b border-white/10 bg-white/5 backdrop-blur-md z-10">
+                <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 rounded-xl bg-white/10 flex items-center justify-center border border-white/20 shadow-inner overflow-hidden shadow-lg">
+                        {agent.avatarUrl ? (
+                            <img src={agent.avatarUrl} alt={agent.name} className="w-full h-full object-cover" />
+                        ) : (
+                            <Bot className="w-6 h-6 text-white/80" />
+                        )}
                     </div>
                     <div>
-                        <h3 className="font-semibold text-base text-foreground">{agent.name}</h3>
-                        <div className="flex items-center gap-1.5">
-                            <span className="block w-2 h-2 bg-green-500 rounded-full" />
-                            <p className="text-xs text-muted-foreground">Active</p>
+                        <h3 className="font-semibold text-lg text-white/90">{agent.name}</h3>
+                        <div className="flex items-center gap-1.5 opacity-80">
+                            <span className="block w-2 h-2 bg-green-400 rounded-full shadow-[0_0_8px_rgba(74,222,128,0.5)]" />
+                            <p className="text-xs text-white/60 font-medium">Active</p>
                         </div>
                     </div>
                 </div>
@@ -196,18 +211,10 @@ export function ChatInterface({ agent }: ChatInterfaceProps) {
                 <div className="flex items-center gap-2">
                     <button
                         onClick={clearHistory}
-                        className="p-2 hover:bg-red-500/10 rounded-md transition-colors text-muted-foreground hover:text-red-500 flex items-center gap-2 text-sm font-medium"
+                        className="p-2 hover:bg-red-500/20 rounded-xl transition-all text-white/50 hover:text-red-400 flex items-center gap-2 text-sm font-medium hover:scale-105 active:scale-95"
                         title="Clear Chat History"
                     >
                         <Trash2 className="w-4 h-4" />
-                    </button>
-                    <button
-                        onClick={() => setIsKnowledgeOpen(true)}
-                        className="p-2 hover:bg-muted rounded-md transition-colors text-muted-foreground hover:text-foreground flex items-center gap-2 text-sm font-medium"
-                        title="Manage Knowledge"
-                    >
-                        <Book className="w-4 h-4" />
-                        <span className="hidden sm:inline">Knowledge</span>
                     </button>
                 </div>
             </div>
@@ -219,35 +226,47 @@ export function ChatInterface({ agent }: ChatInterfaceProps) {
             />
 
             {/* Messages */}
-            <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 space-y-6 z-10 bg-muted/30">
+            <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 space-y-6 z-10 relative">
+                {messages.length <= 1 && (
+                    <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-8 pointer-events-none opacity-50">
+                        <div className="w-20 h-20 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center mb-6 shadow-2xl shadow-blue-500/10">
+                            <Sparkles className="w-10 h-10 text-blue-400" />
+                        </div>
+                        <h2 className="text-3xl font-light text-white mb-3">How can I help today?</h2>
+                        <p className="text-sm text-white/40 max-w-md">
+                            I'm {agent.name}, your intelligent assistant. Use the command palette or type a message to get started.
+                        </p>
+                    </div>
+                )}
                 <AnimatePresence initial={false}>
                     {messages.map((msg, i) => (
                         <motion.div
                             key={i}
-                            initial={{ opacity: 0, y: 10 }}
-                            animate={{ opacity: 1, y: 0 }}
+                            initial={{ opacity: 0, y: 10, filter: 'blur(4px)' }}
+                            animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
                             className={cn(
-                                "flex gap-3 max-w-[85%]",
+                                "flex gap-3 max-w-[85%] relative z-10",
                                 msg.role === 'user' ? "ml-auto flex-row-reverse" : "mr-auto"
                             )}
                         >
                             <div className={cn(
-                                "w-8 h-8 rounded-full flex items-center justify-center shrink-0 border text-xs font-bold shadow-sm mt-1",
-                                msg.role === 'user' ? "bg-primary text-primary-foreground border-primary" :
-                                    msg.role === 'system' ? "bg-amber-100 text-amber-700 border-amber-200 dark:bg-amber-900/30 dark:text-amber-400 dark:border-amber-800" :
-                                        "bg-white text-zinc-700 border-zinc-200 dark:bg-zinc-800 dark:text-zinc-300 dark:border-zinc-700"
+                                "w-9 h-9 rounded-xl flex items-center justify-center shrink-0 border text-xs font-bold shadow-lg mt-1",
+                                msg.role === 'user' ? "bg-white/10 text-white border-white/20 backdrop-blur-md" :
+                                    msg.role === 'system' ? "bg-amber-500/10 text-amber-400 border-amber-500/20 backdrop-blur-md" :
+                                        "bg-black/40 text-blue-400 border-white/10 backdrop-blur-md overflow-hidden p-0"
                             )}>
-                                {msg.role === 'user' ? <User className="w-4 h-4" /> :
-                                    msg.role === 'system' ? <Sparkles className="w-4 h-4" /> :
-                                        <span className="text-[10px]">{agent.name.substring(0, 2).toUpperCase()}</span>}
+                                {msg.role === 'user' ? <User className="w-5 h-5 text-white/70" /> :
+                                    msg.role === 'system' ? <Sparkles className="w-5 h-5" /> :
+                                        agent.avatarUrl ? <img src={agent.avatarUrl} alt={agent.name} className="w-full h-full object-cover" /> :
+                                            <Bot className="w-5 h-5 text-white/70" />}
                             </div>
 
-                            <div className="flex flex-col gap-1 min-w-0">
+                            <div className="flex flex-col gap-1.5 min-w-0">
                                 <div className={cn(
-                                    "px-4 py-2.5 rounded-2xl text-sm leading-relaxed whitespace-pre-wrap shadow-sm break-words",
-                                    msg.role === 'user' ? "bg-primary text-primary-foreground rounded-tr-sm" :
-                                        msg.role === 'system' ? "bg-amber-50 text-amber-900 border border-amber-100 dark:bg-amber-950/30 dark:text-amber-200 dark:border-amber-900/50 text-center w-full" :
-                                            "bg-card border border-border text-foreground rounded-tl-sm"
+                                    "px-5 py-3.5 rounded-2xl text-sm leading-relaxed whitespace-pre-wrap shadow-xl break-words backdrop-blur-md border",
+                                    msg.role === 'user' ? "bg-blue-600/30 text-white/90 border-blue-500/30 rounded-tr-sm" :
+                                        msg.role === 'system' ? "bg-amber-500/10 text-amber-200/90 border-amber-500/20 text-center w-full" :
+                                            "bg-white/5 border-white/10 text-white/90 rounded-tl-sm"
                                 )}>
                                     {msg.parts[0].text}
                                 </div>
@@ -265,45 +284,65 @@ export function ChatInterface({ agent }: ChatInterfaceProps) {
                     {isLoading && (
                         <motion.div
                             initial={{ opacity: 0, y: 10 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            className="flex gap-3 mr-auto"
+                            animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+                            className="flex gap-3 mr-auto relative z-10"
                         >
-                            <div className="w-8 h-8 rounded-full flex items-center justify-center shrink-0 border bg-white border-zinc-200 dark:bg-zinc-800 dark:border-zinc-700 mt-1">
-                                <Bot className="w-4 h-4 text-muted-foreground" />
+                            <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0 border text-xs font-bold shadow-lg mt-1 bg-black/40 text-blue-400 border-white/10 backdrop-blur-md overflow-hidden p-0">
+                                {agent.avatarUrl ? <img src={agent.avatarUrl} alt={agent.name} className="w-full h-full object-cover" /> : <Bot className="w-5 h-5 text-white/70" />}
                             </div>
-                            <div className="px-4 py-3 rounded-2xl rounded-tl-sm bg-card border border-border text-foreground shadow-sm flex items-center gap-1.5">
-                                <span className="w-1.5 h-1.5 bg-muted-foreground/40 rounded-full animate-bounce delay-0" />
-                                <span className="w-1.5 h-1.5 bg-muted-foreground/40 rounded-full animate-bounce delay-150" />
-                                <span className="w-1.5 h-1.5 bg-muted-foreground/40 rounded-full animate-bounce delay-300" />
+                            <div className="px-5 py-4 rounded-2xl rounded-tl-sm bg-white/5 border border-white/10 text-white/90 shadow-xl flex items-center gap-2 backdrop-blur-md">
+                                <span className="w-1.5 h-1.5 bg-white/50 rounded-full animate-bounce delay-0" />
+                                <span className="w-1.5 h-1.5 bg-white/50 rounded-full animate-bounce delay-150" />
+                                <span className="w-1.5 h-1.5 bg-white/50 rounded-full animate-bounce delay-300" />
                             </div>
                         </motion.div>
                     )}
                 </AnimatePresence>
             </div>
 
-            {/* Input */}
-            <div className="p-4 bg-card border-t border-border z-10">
-                <div className="relative flex items-end gap-2 bg-muted/50 border border-input rounded-xl focus-within:ring-2 focus-within:ring-primary/20 focus-within:border-primary transition-all p-2">
-                    <textarea
-                        ref={textareaRef}
-                        value={input}
-                        onChange={(e) => setInput(e.target.value)}
-                        onKeyDown={handleKeyDown}
-                        placeholder={`Message ${agent.name}...`}
-                        className="w-full bg-transparent border-none focus:ring-0 text-sm placeholder:text-muted-foreground resize-none max-h-32 min-h-[24px] py-1 px-2"
-                        rows={1}
-                    />
+            <div className="z-20 bg-transparent flex flex-col pt-2 bg-gradient-to-t from-black/80 to-transparent">
+                {/* Horizontal Action Bar */}
+                <div className="flex items-center justify-center gap-2 px-4 pb-2 w-full max-w-2xl mx-auto overflow-x-auto no-scrollbar scroll-smooth">
                     <button
-                        onClick={sendMessage}
-                        disabled={!input.trim() || isLoading}
-                        className="p-2 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors shrink-0 mb-px"
+                        onClick={onFindPeople}
+                        className="flex items-center gap-2 px-4 py-2 bg-white/[0.03] hover:bg-white/[0.08] border border-white/[0.05] rounded-full text-sm text-white/70 hover:text-white transition-all whitespace-nowrap active:scale-95"
                     >
-                        <Send className="w-4 h-4" />
+                        <UserPlus className="w-4 h-4" />
+                        <span>Find People</span>
+                    </button>
+                    <button
+                        onClick={onOpenConnections}
+                        className="flex items-center gap-2 px-4 py-2 bg-white/[0.03] hover:bg-white/[0.08] border border-white/[0.05] rounded-full text-sm text-white/70 hover:text-white transition-all whitespace-nowrap active:scale-95"
+                    >
+                        <Users className="w-4 h-4" />
+                        <span>Connections</span>
+                    </button>
+                    <button
+                        onClick={onOpenMyAgent}
+                        className="flex items-center gap-2 px-4 py-2 bg-white/[0.03] hover:bg-white/[0.08] border border-white/[0.05] rounded-full text-sm text-white/70 hover:text-white transition-all whitespace-nowrap active:scale-95"
+                    >
+                        <Settings className="w-4 h-4" />
+                        <span>Agent Settings</span>
+                    </button>
+                    <button
+                        onClick={() => setIsKnowledgeOpen(true)}
+                        className="flex items-center gap-2 px-4 py-2 bg-white/[0.03] hover:bg-white/[0.08] border border-white/[0.05] rounded-full text-sm text-white/70 hover:text-white transition-all whitespace-nowrap active:scale-95"
+                    >
+                        <Book className="w-4 h-4" />
+                        <span>Knowledge</span>
                     </button>
                 </div>
-                <p className="text-[10px] text-center text-muted-foreground mt-2 opacity-60">
-                    Press <strong>Enter</strong> to send, <strong>Shift + Enter</strong> for new line
-                </p>
+
+                <div className="mb-[-80px] w-full max-w-4xl mx-auto">
+                    <AnimatedAIChat
+                        agentName={agent.name}
+                        isTyping={isLoading}
+                        onSendMessage={(text: string) => {
+                            setInput(text);
+                            sendMessage(text);
+                        }}
+                    />
+                </div>
             </div>
         </div>
     );

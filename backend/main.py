@@ -199,16 +199,16 @@ async def get_agent_connections(
 
         # Fetch pending requests received by this agent
         pending_res = supabase.table("agent_connections").select(
-            "id, status, created_at, requester_agent_id, personal_agents!agent_connections_requester_agent_id_fkey(agent_name, headline)"
+            "id, status, created_at, requester_agent_id, personal_agents!agent_connections_requester_agent_id_fkey(agent_name, headline, avatar_url)"
         ).eq("receiver_agent_id", agent_id).eq("status", "pending").execute()
 
         # Fetch accepted connections (where this agent is requester OR receiver)
         acc_req_res = supabase.table("agent_connections").select(
-            "id, status, created_at, receiver_agent_id, personal_agents!agent_connections_receiver_agent_id_fkey(agent_name, headline)"
+            "id, status, created_at, receiver_agent_id, personal_agents!agent_connections_receiver_agent_id_fkey(agent_name, headline, avatar_url)"
         ).eq("requester_agent_id", agent_id).eq("status", "accepted").execute()
         
         acc_rec_res = supabase.table("agent_connections").select(
-            "id, status, created_at, requester_agent_id, personal_agents!agent_connections_requester_agent_id_fkey(agent_name, headline)"
+            "id, status, created_at, requester_agent_id, personal_agents!agent_connections_requester_agent_id_fkey(agent_name, headline, avatar_url)"
         ).eq("receiver_agent_id", agent_id).eq("status", "accepted").execute()
 
         # Normalize accepted connections format for the frontend
@@ -219,6 +219,7 @@ async def get_agent_connections(
                 "agent_id": req["receiver_agent_id"],
                 "agent_name": req["personal_agents"]["agent_name"],
                 "headline": req["personal_agents"]["headline"],
+                "avatar_url": req["personal_agents"].get("avatar_url"),
                 "created_at": req["created_at"]
             })
         for rec in acc_rec_res.data:
@@ -227,6 +228,7 @@ async def get_agent_connections(
                 "agent_id": rec["requester_agent_id"],
                 "agent_name": rec["personal_agents"]["agent_name"],
                 "headline": rec["personal_agents"]["headline"],
+                "avatar_url": rec["personal_agents"].get("avatar_url"),
                 "created_at": rec["created_at"]
             })
 
@@ -237,6 +239,7 @@ async def get_agent_connections(
                 "agent_id": p["requester_agent_id"],
                 "agent_name": p["personal_agents"]["agent_name"],
                 "headline": p["personal_agents"]["headline"],
+                "avatar_url": p["personal_agents"].get("avatar_url"),
                 "created_at": p["created_at"]
             })
 

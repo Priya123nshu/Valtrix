@@ -16,9 +16,11 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
     const [headline, setHeadline] = useState('');
     const [bio, setBio] = useState('');
     const [isPublic, setIsPublic] = useState(true);
+    const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
 
     const [isLoading, setIsLoading] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
+    const [isUploading, setIsUploading] = useState(false);
     const [status, setStatus] = useState<{ type: 'success' | 'error', message: string } | null>(null);
 
     useEffect(() => {
@@ -37,6 +39,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                     headline, 
                     bio, 
                     is_public,
+                    avatar_url,
                     users!inner(name)
                 `)
                 .eq('id', personalAgentId)
@@ -52,11 +55,40 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                 setHeadline(data.headline || '');
                 setBio(data.bio || '');
                 setIsPublic(data.is_public !== false); // Defaults true
+                setAvatarUrl(data.avatar_url || null);
             }
         } catch (error) {
             console.error("Error loading agent profile:", error);
         } finally {
             setIsLoading(false);
+        }
+    };
+
+    const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        try {
+            if (!e.target.files || e.target.files.length === 0) return;
+            const file = e.target.files[0];
+            const fileExt = file.name.split('.').pop();
+            const fileName = `${personalAgentId}-${Date.now()}.${fileExt}`;
+            const filePath = `${fileName}`;
+
+            setIsUploading(true);
+            setStatus({ type: 'success', message: 'Uploading image...' });
+
+            const { error: uploadError } = await supabase.storage
+                .from('avatars')
+                .upload(filePath, file, { upsert: true });
+
+            if (uploadError) throw uploadError;
+
+            const { data } = supabase.storage.from('avatars').getPublicUrl(filePath);
+
+            setAvatarUrl(data.publicUrl);
+            setStatus({ type: 'success', message: 'Avatar uploaded! Click Save Config.' });
+        } catch (error: any) {
+            setStatus({ type: 'error', message: `Upload failed: ${error.message}` });
+        } finally {
+            setIsUploading(false);
         }
     };
 
@@ -81,7 +113,8 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                     agent_name: agentName.trim() || null,
                     headline: headline.trim() || null,
                     bio: bio.trim() || null,
-                    is_public: isPublic
+                    is_public: isPublic,
+                    avatar_url: avatarUrl
                 })
             });
 
@@ -145,6 +178,34 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                                     />
                                     <div className="w-11 h-6 bg-muted peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
                                 </label>
+                            </div>
+
+                            <div className="flex flex-col items-center gap-4 pb-4">
+                                <div className="relative group">
+                                    <div className="w-24 h-24 rounded-full overflow-hidden bg-muted/50 border-2 border-border flex items-center justify-center relative">
+                                        {avatarUrl ? (
+                                            <img src={avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
+                                        ) : (
+                                            <Globe className="w-10 h-10 text-muted-foreground opacity-50" />
+                                        )}
+                                        {isUploading && (
+                                            <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+                                                <span className="animate-spin w-6 h-6 border-2 border-white border-t-transparent rounded-full" />
+                                            </div>
+                                        )}
+                                    </div>
+                                    <label className={`absolute inset-0 flex items-center justify-center bg-black/50 text-white rounded-full opacity-0 ${!isUploading ? 'group-hover:opacity-100 cursor-pointer' : ''} transition-opacity`}>
+                                        <span className="text-xs font-semibold">{isUploading ? '...' : 'Upload'}</span>
+                                        <input
+                                            type="file"
+                                            accept="image/*"
+                                            onChange={handleAvatarUpload}
+                                            disabled={isUploading}
+                                            className="hidden"
+                                        />
+                                    </label>
+                                </div>
+                                <p className="text-xs text-muted-foreground text-center">Click the circle to upload a profile picture.<br />Square images work best.</p>
                             </div>
 
                             <div className="space-y-2">

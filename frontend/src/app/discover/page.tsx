@@ -39,9 +39,10 @@ function DiscoverContent() {
                 .filter((a: any) => a.id !== personalAgentId) // Filter out self
                 .map((a: any) => ({
                     id: a.id,
-                    name: a.users?.name || "Unknown User",
-                    description: a.headline || a.users?.role_type || "Professional",
-                    url: `${API_BASE}/api/agents/${a.id}/chat`
+                    name: a.agent_name || a.users?.name || "Unknown User",
+                    description: a.bio || a.headline || a.users?.role_type || "Professional",
+                    url: `${API_BASE}/api/agents/${a.id}/chat`,
+                    avatarUrl: a.avatar_url
                 }));
             setPublicAgents(agentsList);
 
@@ -157,11 +158,17 @@ function DiscoverContent() {
                             return (
                                 <div key={agent.id} className="bg-card border border-border rounded-2xl p-5 hover:border-primary/30 transition-all group flex flex-col justify-between h-48">
                                     <div>
-                                        <div className="w-10 h-10 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-sm mb-3">
-                                            {agent.name.substring(0, 2).toUpperCase()}
+                                        <div className="w-12 h-12 rounded-xl bg-white/10 flex items-center justify-center border border-white/20 shadow-inner overflow-hidden mb-3">
+                                            {agent.avatarUrl ? (
+                                                <img src={agent.avatarUrl} alt={agent.name} className="w-full h-full object-cover" />
+                                            ) : (
+                                                <div className="text-primary font-bold text-sm bg-primary/10 w-full h-full flex items-center justify-center">
+                                                    {agent.name.substring(0, 2).toUpperCase()}
+                                                </div>
+                                            )}
                                         </div>
                                         <h3 className="font-semibold text-foreground text-sm line-clamp-1">{agent.name}</h3>
-                                        <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{agent.description}</p>
+                                        <p className="text-xs text-muted-foreground mt-1 line-clamp-3">{agent.description}</p>
                                     </div>
 
                                     <div className="mt-4">
